@@ -237,6 +237,25 @@ cc_library(
 )
 
 cc_library(
+    name = "load_model_prediction_service_impl",
+    srcs = ["load_model_prediction_service_impl.cc"],
+    hdrs = ["load_model_prediction_service_impl.h"],
+    deps = [
+        ":grpc_status_util",
+        ":server_core",
+        "//tensorflow_serving/apis:get_model_metadata_proto",
+        "//tensorflow_serving/apis:predict_proto",
+        "//tensorflow_serving/apis:load_model_prediction_service_proto",
+        "//tensorflow_serving/servables/tensorflow:get_model_metadata_impl",
+        "//tensorflow_serving/servables/tensorflow:predict_impl",
+        "@grpc//:grpc++",
+        "@org_tensorflow//tensorflow/core:lib",
+        "@org_tensorflow//tensorflow/core:protos_all_cc",
+    ],
+)
+
+
+cc_library(
     name = "grpc_status_util",
     srcs = ["grpc_status_util.cc"],
     hdrs = ["grpc_status_util.h"],
@@ -321,6 +340,7 @@ cc_library(
         ":model_platform_types",
         ":platform_config_util",
         ":prediction_service_impl",
+        ":load_model_prediction_service_impl",
         ":server_core",
         ":grpc_status_util",
         ":model_service_impl",

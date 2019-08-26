@@ -26,6 +26,7 @@ limitations under the License.
 #include "tensorflow_serving/model_servers/http_server.h"
 #include "tensorflow_serving/model_servers/model_service_impl.h"
 #include "tensorflow_serving/model_servers/prediction_service_impl.h"
+#include "tensorflow_serving/model_servers/load_model_prediction_service_impl.h"
 #include "tensorflow_serving/model_servers/server_core.h"
 
 namespace tensorflow {
@@ -107,6 +108,7 @@ class Server {
   std::unique_ptr<ServerCore> server_core_;
   std::unique_ptr<ModelServiceImpl> model_service_;
   std::unique_ptr<PredictionServiceImpl> prediction_service_;
+  std::unique_ptr<LoadModelPredictionServiceImpl> load_model_prediction_service_;
   std::unique_ptr<::grpc::Server> grpc_server_;
   std::unique_ptr<net_http::HTTPServerInterface> http_server_;
   // A thread that calls PollFilesystemAndReloadConfig() periodically if
