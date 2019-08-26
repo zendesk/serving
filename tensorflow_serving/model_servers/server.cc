@@ -318,6 +318,14 @@ Status Server::BuildAndStart(const Options& server_options) {
       server_options.enforce_session_run_timeout;
   prediction_service_ =
       absl::make_unique<PredictionServiceImpl>(predict_server_options);
+
+  LoadModelPredictionServiceImpl::Options load_model_predict_server_options;
+  load_model_predict_server_options.server_core = server_core_.get();
+  load_model_predict_server_options.use_saved_model = use_saved_model;
+  load_model_predict_server_options.enforce_session_run_timeout =
+      server_options.enforce_session_run_timeout;
+  load_model_prediction_service_ =
+      absl::make_unique<LoadModelPredictionServiceImpl>(load_model_predict_server_options);
   ::grpc::ServerBuilder builder;
   builder.AddListeningPort(
       server_address,
@@ -331,6 +339,7 @@ Status Server::BuildAndStart(const Options& server_options) {
   }
   builder.RegisterService(model_service_.get());
   builder.RegisterService(prediction_service_.get());
+  builder.RegisterService(load_model_prediction_service_.get());
   builder.SetMaxMessageSize(tensorflow::kint32max);
   const std::vector<GrpcChannelArgument> channel_arguments =
       parseGrpcChannelArgs(server_options.grpc_channel_arguments);

@@ -110,6 +110,16 @@ serving_proto_library(
     ],
 )
 
+serving_proto_library(
+    name = "load_model_predict_proto",
+    srcs = ["load_model_predict.proto"],
+    cc_api_version = 2,
+    deps = [
+        ":model_proto",
+        "@org_tensorflow//tensorflow/core:protos_all_cc",
+    ],
+)
+
 serving_proto_library_py(
     name = "predict_proto_py_pb2",
     srcs = ["predict.proto"],
@@ -165,6 +175,19 @@ serving_proto_library(
         ":inference_proto",
         ":predict_proto",
         ":regression_proto",
+    ],
+)
+
+serving_proto_library(
+    name = "load_model_prediction_service_proto",
+    srcs = ["load_model_prediction_service.proto"],
+    has_services = 1,
+    cc_api_version = 2,
+    cc_grpc_version = 1,
+    deps = [
+        ":get_model_metadata_proto",
+        ":inference_proto",
+        ":load_model_predict_proto",
     ],
 )
 

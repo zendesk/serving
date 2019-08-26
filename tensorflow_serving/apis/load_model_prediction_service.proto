@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package tensorflow.serving;
+option cc_enable_arenas = true;
+
+import "tensorflow_serving/apis/get_model_metadata.proto";
+import "tensorflow_serving/apis/load_model_predict.proto";
+
+// open source marker; do not remove
+// PredictionService provides access to machine-learned models loaded by
+// model_servers.
+service LoadModelPredictionService {
+  // Predict -- provides access to TensorFlow model and loads if required.
+  rpc LoadPredict(LoadModelPredictRequest) returns (LoadModelPredictResponse);
+  // GetModelMetadata - provides access to metadata for loaded models.
+  rpc GetModelMetadata(GetModelMetadataRequest)
+      returns (GetModelMetadataResponse);
+}
