@@ -35,14 +35,16 @@ int DeadlineToTimeoutMillis(const gpr_timespec deadline) {
 }  // namespace
 
 ::grpc::Status LoadModelPredictionServiceImpl::LoadPredict(::grpc::ServerContext *context,
-                                              const PredictRequest *request,
-                                              PredictResponse *response) {
+                                              const LoadPredictRequest *request,
+                                              LoadPredictResponse *response) {
   tensorflow::RunOptions run_options = tensorflow::RunOptions();
   if (enforce_session_run_timeout_) {
     run_options.set_timeout_in_ms(
         DeadlineToTimeoutMillis(context->raw_deadline()));
   }
-	LOG(INFO) << "Load Model api";
+  ModelSpec m_spec = request->model_spec();
+  string m_name = m_spec.name();
+	LOG(INFO) << "Load Model " + m_name;
   /*
   ModelServerConfig BuildSingleModelConfig(const string& model_name,
                                            const string& model_base_path) {
@@ -59,8 +61,6 @@ int DeadlineToTimeoutMillis(const gpr_timespec deadline) {
     return config;
   } */
 
-  //ModelSpec m_spec = request->model_spec();
-  //string m_name = m_spec.name();
   //string m_path = "/data/models/";
   //string model_platform = "tensorflow";
   //ModelConfigList mconfig = [
