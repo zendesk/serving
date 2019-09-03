@@ -35,8 +35,8 @@ int DeadlineToTimeoutMillis(const gpr_timespec deadline) {
 }  // namespace
 
 ::grpc::Status LoadModelPredictionServiceImpl::LoadPredict(::grpc::ServerContext *context,
-                                              const LoadPredictRequest *request,
-                                              LoadPredictResponse *response) {
+                                              const PredictRequest *request,
+                                              PredictResponse *response) {
   tensorflow::RunOptions run_options = tensorflow::RunOptions();
   if (enforce_session_run_timeout_) {
     run_options.set_timeout_in_ms(
