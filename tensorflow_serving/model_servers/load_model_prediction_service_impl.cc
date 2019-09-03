@@ -16,10 +16,12 @@ limitations under the License.
 #include <string>
 
 #include "tensorflow_serving/model_servers/load_model_prediction_service_impl.h"
+#include "tensorflow_serving/config/model_server_config.pb.h"
 
 #include "grpc/grpc.h"
 #include "tensorflow_serving/model_servers/grpc_status_util.h"
 #include "tensorflow_serving/servables/tensorflow/get_model_metadata_impl.h"
+#include "tensorflow_serving/model_servers/model_platform_types.h"
 
 namespace tensorflow {
 namespace serving {
@@ -30,6 +32,21 @@ int DeadlineToTimeoutMillis(const gpr_timespec deadline) {
   return gpr_time_to_millis(
       gpr_time_sub(gpr_convert_clock_type(deadline, GPR_CLOCK_MONOTONIC),
                    gpr_now(GPR_CLOCK_MONOTONIC)));
+}
+
+ModelServerConfig BuildSingleModelConfig(const string& model_name,
+                                         const string& model_base_path) {
+  ModelServerConfig config;
+  LOG(INFO) << "Building single TensorFlow model file config: "
+            << " model_name: " << model_name
+            << " model_base_path: " << model_base_path;
+  tensorflow::serving::ModelConfig* single_model =
+      config.mutable_model_config_list()->add_config();
+  single_model->set_name(model_name);
+  single_model->set_base_path(model_base_path);
+  single_model->set_model_platform(
+      tensorflow::serving::kTensorFlowModelPlatform);
+  return config;
 }
 
 }  // namespace
@@ -45,29 +62,19 @@ int DeadlineToTimeoutMillis(const gpr_timespec deadline) {
   ModelSpec m_spec = request->model_spec();
   string m_name = m_spec.name();
 	LOG(INFO) << "Load Model " + m_name;
-  /*
-  ModelServerConfig BuildSingleModelConfig(const string& model_name,
-                                           const string& model_base_path) {
-    ModelServerConfig config;
-    LOG(INFO) << "Building single TensorFlow model file config: "
-              << " model_name: " << model_name
-              << " model_base_path: " << model_base_path;
-    tensorflow::serving::ModelConfig* single_model =
-        config.mutable_model_config_list()->add_config();
-    single_model->set_name(model_name);
-    single_model->set_base_path(model_base_path);
-    single_model->set_model_platform(
-        tensorflow::serving::kTensorFlowModelPlatform);
-    return config;
-  } */
 
-  //string m_path = "/data/models/";
-  //string model_platform = "tensorflow";
+  string m_path = "/data/models/" + m_name;
+  string model_platform = "tensorflow";
+  ModelServerConfig server_config = BuildSingleModelConfig(m_name, m_path);
+  core_->ReloadConfig(server_config);
   //ModelConfigList mconfig = [
   //  m_name,
   //  m_path,
-  //  model_platform
-  //];
+  //  model_platform];
+  /*
+  const ModelConfigList list = server_config.model_config_list();
+  status = core_->ReloadConfig(server_config);
+  */
 
   const ::grpc::Status status =
       ToGRPCStatus(predictor_->Predict(run_options, core_, *request, response));
