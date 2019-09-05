@@ -66,7 +66,7 @@ ModelServerConfig BuildSingleModelConfig(const string& model_name,
   string m_path = "/data/models/" + m_name;
   string model_platform = "tensorflow";
   ModelServerConfig server_config = BuildSingleModelConfig(m_name, m_path);
-  core_->ReloadConfig(server_config);
+  core_->AppendConfig(server_config);
   //ModelConfigList mconfig = [
   //  m_name,
   //  m_path,
