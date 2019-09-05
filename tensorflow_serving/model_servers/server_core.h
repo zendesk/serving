@@ -214,6 +214,10 @@ class ServerCore : public Manager {
   virtual Status ReloadConfig(const ModelServerConfig& config)
       LOCKS_EXCLUDED(config_mu_);
 
+  /// Append to config and reload models.
+  virtual Status AppendConfig(const ModelServerConfig& config)
+      LOCKS_EXCLUDED(config_mu_);
+
   /// Returns ServableStateMonitor that can be used to query servable states.
   virtual ServableStateMonitor* servable_state_monitor() const {
     return servable_state_monitor_.get();
