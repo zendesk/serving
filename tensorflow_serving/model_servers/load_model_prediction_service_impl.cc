@@ -65,16 +65,14 @@ ModelServerConfig BuildSingleModelConfig(const string& model_name,
 
   string m_path = "/data/models/" + m_name;
   string model_platform = "tensorflow";
-  ModelServerConfig server_config = BuildSingleModelConfig(m_name, m_path);
-  core_->AppendConfig(server_config);
-  //ModelConfigList mconfig = [
-  //  m_name,
-  //  m_path,
-  //  model_platform];
-  /*
-  const ModelConfigList list = server_config.model_config_list();
-  status = core_->ReloadConfig(server_config);
-  */
+  if (Env::Default()->FileExists(m_path).ok()) {
+    ModelServerConfig server_config = BuildSingleModelConfig(m_name, m_path);
+    core_->AppendConfig(server_config);
+  } else {
+    return ToGRPCStatus(errors::InvalidArgument("Could not find base path ",
+                                   m_path, " for servable ",
+                                   m_name));
+  }
 
   const ::grpc::Status status =
       ToGRPCStatus(predictor_->Predict(run_options, core_, *request, response));
