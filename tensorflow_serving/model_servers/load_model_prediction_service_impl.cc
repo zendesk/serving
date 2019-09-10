@@ -61,7 +61,7 @@ ModelServerConfig BuildSingleModelConfig(const string& model_name,
   }
   ModelSpec m_spec = request->model_spec();
   string m_name = m_spec.name();
-	LOG(INFO) << "Load Model " + m_name;
+  LOG(INFO) << "Load Model " + m_name;
 
   string m_path = "/data/models/" + m_name;
   string model_platform = "tensorflow";
