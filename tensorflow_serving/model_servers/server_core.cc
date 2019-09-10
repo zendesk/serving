@@ -492,14 +492,19 @@ Status ServerCore::ReloadConfig(const ModelServerConfig& new_config) {
 Status ServerCore::AppendConfig(const ModelServerConfig& config_piece) {
   mutex_lock l(config_mu_);
   const ModelConfigList list = config_piece.model_config_list();
+
   for (int index = 0; index < list.config_size(); index++) {
     const ModelConfig config = list.config(index);
-    LOG(INFO) << "\nAppending config entry"
-              << "\n\tindex : " << index
-              << "\n\tpath : " << config.base_path()
-              << "\n\tname : " << config.name()
-              << "\n\tplatform : " << config.model_platform();
-    (*config_.mutable_model_config_list()->add_config()) = config;
+    const ServableStateMonitor::VersionMap versions_and_states =
+        servable_state_monitor_->GetVersionStates(config.name());
+    if (versions_and_states.empty()) {
+      LOG(INFO) << "\nAppending config entry"
+                << "\n\tindex : " << index
+                << "\n\tpath : " << config.base_path()
+                << "\n\tname : " << config.name()
+                << "\n\tplatform : " << config.model_platform();
+      (*config_.mutable_model_config_list()->add_config()) = config;
+    }
   }
   TF_RETURN_IF_ERROR(AddModelsViaModelConfigList());
   return Status::OK();

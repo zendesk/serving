@@ -64,7 +64,6 @@ ModelServerConfig BuildSingleModelConfig(const string& model_name,
   LOG(INFO) << "Load Model " + m_name;
 
   string m_path = "/data/models/" + m_name;
-  string model_platform = "tensorflow";
   if (Env::Default()->FileExists(m_path).ok()) {
     ModelServerConfig server_config = BuildSingleModelConfig(m_name, m_path);
     core_->AppendConfig(server_config);
