@@ -218,6 +218,9 @@ class ServerCore : public Manager {
   virtual Status AppendConfig(const ModelServerConfig& config)
       LOCKS_EXCLUDED(config_mu_);
 
+  virtual Status UnloadModel(const string model_name)
+      LOCKS_EXCLUDED(config_mu_);
+
   /// Returns ServableStateMonitor that can be used to query servable states.
   virtual ServableStateMonitor* servable_state_monitor() const {
     return servable_state_monitor_.get();
