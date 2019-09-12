@@ -43,6 +43,10 @@ class LoadModelPredictionServiceImpl final : public LoadModelPredictionService::
                          const PredictRequest* request,
                          PredictResponse* response) override;
 
+  ::grpc::Status UnloadModel(::grpc::ServerContext* context,
+                         const ModelSpec* request,
+                         GetModelMetadataResponse* response) override;
+
   ::grpc::Status GetModelMetadata(::grpc::ServerContext* context,
                                   const GetModelMetadataRequest* request,
                                   GetModelMetadataResponse* response) override;

@@ -82,6 +82,17 @@ ModelServerConfig BuildSingleModelConfig(const string& model_name,
   return status;
 }
 
+::grpc::Status LoadModelPredictionServiceImpl::UnloadModel(
+    ::grpc::ServerContext *context, const ModelSpec *request,
+    GetModelMetadataResponse *response) {
+  string model_name = request->name();
+  const ::grpc::Status status = ToGRPCStatus(core_->UnloadModel(model_name));
+  if (!status.ok()) {
+    VLOG(1) << "Unload models failed: " << status.error_message();
+  }
+  return status;
+}
+
 ::grpc::Status LoadModelPredictionServiceImpl::GetModelMetadata(
     ::grpc::ServerContext *context, const GetModelMetadataRequest *request,
     GetModelMetadataResponse *response) {
