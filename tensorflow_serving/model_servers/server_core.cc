@@ -489,6 +489,71 @@ Status ServerCore::ReloadConfig(const ModelServerConfig& new_config) {
   return Status::OK();
 }
 
+Status ServerCore::AppendConfig(const ModelServerConfig& config_piece) {
+  mutex_lock l(config_mu_);
+  const ModelConfigList list = config_piece.model_config_list();
+
+  for (int index = 0; index < list.config_size(); index++) {
+    const ModelConfig config = list.config(index);
+    const ServableStateMonitor::VersionMap versions_and_states =
+        servable_state_monitor_->GetVersionStates(config.name());
+    bool load_required = true;
+    for (const auto& version_and_state : versions_and_states) {
+      const int64 version = version_and_state.first;
+      const ServableState& servable_state = version_and_state.second.state;
+      if (servable_state.manager_state == ServableState::ManagerState::kAvailable) { //TODO check other states: eg loading
+        load_required = false;
+      }
+    }
+    if (load_required) {
+      LOG(INFO) << "\nAppending config entry"
+                << "\n\tindex : " << index
+                << "\n\tpath : " << config.base_path()
+                << "\n\tname : " << config.name()
+                << "\n\tplatform : " << config.model_platform();
+      (*config_.mutable_model_config_list()->add_config()) = config;
+    }
+  }
+  TF_RETURN_IF_ERROR(AddModelsViaModelConfigList());
+  return Status::OK();
+}
+
+//TODO Allow multiple models to be unloaded
+Status ServerCore::UnloadModel(const string model_name) {
+
+  ModelServerConfig new_config;
+  const ServableStateMonitor::VersionMap versions_and_states =
+      servable_state_monitor_->GetVersionStates(model_name);
+  if (!versions_and_states.empty()) {
+    bool unload_required = false;
+    for (const auto& version_and_state : versions_and_states) {
+      const int64 version = version_and_state.first;
+      const ServableState& servable_state = version_and_state.second.state;
+      if (servable_state.manager_state == ServableState::ManagerState::kAvailable) { //TODO check other states: eg unloading
+        unload_required = true;
+      }
+    }
+    if (unload_required) {
+      mutex_lock l(config_mu_);
+      const ModelConfigList list = config_.model_config_list();
+      for (int index = 0; index < list.config_size(); index++) {
+        const ModelConfig config = list.config(index);
+        if (config.name() != model_name){
+          LOG(INFO) << "Copy model " + config.name() + " to new config";
+          (*new_config.mutable_model_config_list()->add_config()) = config;
+        }
+      }
+      config_ = new_config;
+      LOG(INFO) << "Recreated config. Reloading..";
+      TF_RETURN_IF_ERROR(AddModelsViaModelConfigList());
+      LOG(INFO) << "Reloading Done.";
+    }
+  } else {
+    LOG(INFO) << "Unload attempt, model not found: " << model_name;
+  }
+  return Status::OK();
+}
+
 Status ServerCore::UpdateModelVersionLabelMap() {
   std::unique_ptr<std::map<string, std::map<string, int64>>> new_label_map(
       new std::map<string, std::map<string, int64>>);

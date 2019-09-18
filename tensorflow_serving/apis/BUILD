@@ -168,6 +168,19 @@ serving_proto_library(
     ],
 )
 
+serving_proto_library(
+    name = "load_model_prediction_service_proto",
+    srcs = ["load_model_prediction_service.proto"],
+    has_services = 1,
+    cc_api_version = 2,
+    cc_grpc_version = 1,
+    deps = [
+        ":get_model_metadata_proto",
+        ":inference_proto",
+        ":predict_proto",
+    ],
+)
+
 py_library(
     name = "prediction_service_proto_py_pb2",
     srcs = [
