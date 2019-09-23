@@ -501,7 +501,9 @@ Status ServerCore::AppendConfig(const ModelServerConfig& config_piece) {
     for (const auto& version_and_state : versions_and_states) {
       const int64 version = version_and_state.first;
       const ServableState& servable_state = version_and_state.second.state;
-      if (servable_state.manager_state == ServableState::ManagerState::kAvailable) { //TODO check other states: eg loading
+      if ((servable_state.manager_state == ServableState::ManagerState::kStart) or
+         (servable_state.manager_state == ServableState::ManagerState::kLoading) or
+         (servable_state.manager_state == ServableState::ManagerState::kAvailable)) {
         load_required = false;
       }
     }
@@ -529,7 +531,9 @@ Status ServerCore::UnloadModel(const string model_name) {
     for (const auto& version_and_state : versions_and_states) {
       const int64 version = version_and_state.first;
       const ServableState& servable_state = version_and_state.second.state;
-      if (servable_state.manager_state == ServableState::ManagerState::kAvailable) { //TODO check other states: eg unloading
+      if ((servable_state.manager_state == ServableState::ManagerState::kStart) or
+         (servable_state.manager_state == ServableState::ManagerState::kLoading) or
+         (servable_state.manager_state == ServableState::ManagerState::kAvailable)) {
         unload_required = true;
       }
     }
