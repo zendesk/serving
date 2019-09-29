@@ -63,7 +63,7 @@ ModelServerConfig BuildSingleModelConfig(const string& model_name,
   string m_name = m_spec.name();
   LOG(INFO) << "Load Model " + m_name;
 
-  string m_path = "/data/models/" + m_name;
+  string m_path = "s3://aha-poc-usw2/jkirkwood/" + m_name;
   if (Env::Default()->FileExists(m_path).ok()) {
     ModelServerConfig server_config = BuildSingleModelConfig(m_name, m_path);
     core_->AppendConfig(server_config);
