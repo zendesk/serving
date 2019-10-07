@@ -492,7 +492,7 @@ Status ServerCore::ReloadConfig(const ModelServerConfig& new_config) {
 Status ServerCore::LazyLoad(const ModelSpec& model_spec) {
 
   string model_name = model_spec.name();
-  string model_path = "/data/models/" + model_name;
+  const string& model_path = io::JoinPath(*options_.lazy_model_base_path, model_name);
   if (!Env::Default()->FileExists(model_path).ok()) {
     return errors::InvalidArgument("Could not find base path ",
                                    model_path, " for servable ",
