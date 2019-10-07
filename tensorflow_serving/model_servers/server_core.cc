@@ -489,6 +489,26 @@ Status ServerCore::ReloadConfig(const ModelServerConfig& new_config) {
   return Status::OK();
 }
 
+Status ServerCore::LazyLoad(const ModelSpec& model_spec) {
+
+  string model_name = model_spec.name();
+  string model_path = "/data/models/" + model_name;
+  if (!Env::Default()->FileExists(model_path).ok()) {
+    return errors::InvalidArgument("Could not find base path ",
+                                   model_path, " for servable ",
+                                   model_name);
+  }
+
+  ModelServerConfig config;
+  tensorflow::serving::ModelConfig* single_model =
+      config.mutable_model_config_list()->add_config();
+  single_model->set_name(model_name);
+  single_model->set_base_path(model_path);
+  single_model->set_model_platform(
+    tensorflow::serving::kTensorFlowModelPlatform);
+  return AppendConfig(config);
+}
+
 Status ServerCore::AppendConfig(const ModelServerConfig& config_piece) {
   mutex_lock l(config_mu_);
   const ModelConfigList list = config_piece.model_config_list();

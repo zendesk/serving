@@ -214,6 +214,8 @@ class ServerCore : public Manager {
   virtual Status ReloadConfig(const ModelServerConfig& config)
       LOCKS_EXCLUDED(config_mu_);
 
+  virtual Status LazyLoad(const ModelSpec& model_spec);
+
   /// Append to config and reload models.
   virtual Status AppendConfig(const ModelServerConfig& config)
       LOCKS_EXCLUDED(config_mu_);
