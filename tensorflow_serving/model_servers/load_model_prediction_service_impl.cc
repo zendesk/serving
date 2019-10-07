@@ -34,21 +34,6 @@ int DeadlineToTimeoutMillis(const gpr_timespec deadline) {
                    gpr_now(GPR_CLOCK_MONOTONIC)));
 }
 
-ModelServerConfig BuildSingleModelConfig(const string& model_name,
-                                         const string& model_base_path) {
-  ModelServerConfig config;
-  LOG(INFO) << "Building single TensorFlow model file config: "
-            << " model_name: " << model_name
-            << " model_base_path: " << model_base_path;
-  tensorflow::serving::ModelConfig* single_model =
-      config.mutable_model_config_list()->add_config();
-  single_model->set_name(model_name);
-  single_model->set_base_path(model_base_path);
-  single_model->set_model_platform(
-      tensorflow::serving::kTensorFlowModelPlatform);
-  return config;
-}
-
 }  // namespace
 
 ::grpc::Status LoadModelPredictionServiceImpl::LoadPredict(::grpc::ServerContext *context,
@@ -59,18 +44,15 @@ ModelServerConfig BuildSingleModelConfig(const string& model_name,
     run_options.set_timeout_in_ms(
         DeadlineToTimeoutMillis(context->raw_deadline()));
   }
-  ModelSpec m_spec = request->model_spec();
-  string m_name = m_spec.name();
-  LOG(INFO) << "Load Model " + m_name;
+  ModelSpec model_spec = request->model_spec();
+  string model_name = model_spec.name();
+  LOG(INFO) << "Load Model " + model_name;
 
-  string m_path = "/data/models/" + m_name;
-  if (Env::Default()->FileExists(m_path).ok()) {
-    ModelServerConfig server_config = BuildSingleModelConfig(m_name, m_path);
-    core_->AppendConfig(server_config);
-  } else {
-    return ToGRPCStatus(errors::InvalidArgument("Could not find base path ",
-                                   m_path, " for servable ",
-                                   m_name));
+  const ::grpc::Status load_status =
+      ToGRPCStatus(core_->LazyLoad(model_spec));
+  if (!load_status.ok()) {
+    VLOG(1) << "Lazy load failed: " << load_status.error_message();
+    return load_status;
   }
 
   const ::grpc::Status status =
