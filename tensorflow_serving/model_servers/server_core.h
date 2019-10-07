@@ -94,6 +94,9 @@ class ServerCore : public Manager {
     // be prepended with model_config_list_root_dir.
     optional<string> model_config_list_root_dir;
 
+    // Find models for lazy loading in lazy_model_base_path.
+    optional<string> lazy_model_base_path;
+
     // The AspiredVersionPolicy to use for the manager. Must be non-null.
     std::unique_ptr<AspiredVersionPolicy> aspired_version_policy;
 

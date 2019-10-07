@@ -104,6 +104,9 @@ int main(int argc, char** argv) {
       tensorflow::Flag("model_base_path", &options.model_base_path,
                        "path to export (ignored if --model_config_file flag "
                        "is set, otherwise required)"),
+      tensorflow::Flag("lazy_model_base_path", &options.lazy_model_base_path,
+                       "If set, lazy model loads will look for models within "
+                       "this path."),
       tensorflow::Flag("max_num_load_retries", &options.max_num_load_retries,
                        "maximum number of times it retries loading a model "
                        "after the first failure, before giving up. "
