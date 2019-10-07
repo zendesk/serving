@@ -63,6 +63,7 @@ class Server {
     tensorflow::int32 file_system_poll_wait_seconds = 1;
     bool flush_filesystem_caches = true;
     tensorflow::string model_base_path;
+    tensorflow::string lazy_model_base_path;
     tensorflow::string saved_model_tags;
     // Tensorflow session parallelism of zero means that both inter and intra op
     // thread pools will be auto configured.
