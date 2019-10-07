@@ -16,7 +16,6 @@ limitations under the License.
 #ifndef TENSORFLOW_SERVING_MODEL_SERVERS_LOAD_MODEL_PREDICTION_SERVICE_IMPL_H_
 #define TENSORFLOW_SERVING_MODEL_SERVERS_LOAD_MODEL_PREDICTION_SERVICE_IMPL_H_
 
-#include "tensorflow/core/platform/env.h"
 #include "tensorflow_serving/apis/load_model_prediction_service.grpc.pb.h"
 #include "tensorflow_serving/model_servers/server_core.h"
 #include "tensorflow_serving/servables/tensorflow/predict_impl.h"
