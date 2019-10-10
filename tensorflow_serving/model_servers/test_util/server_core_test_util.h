@@ -74,6 +74,8 @@ class ServerCoreTest : public ::testing::TestWithParam<std::tuple<int, bool>> {
   // of half-plus-two that has two versions instead of one.
   void SwitchToHalfPlusTwoWith2Versions(ModelServerConfig* config);
 
+  void RenameModelServerConfig(ModelServerConfig* config, string new_name);
+
   // Creates some reasonable default ServerCore options for tests.
   ServerCore::Options GetDefaultOptions();
 
