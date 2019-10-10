@@ -876,6 +876,29 @@ TEST_P(ServerCoreTest, VersionLabelsNotAllowed) {
       ::testing::HasSubstr("Model version labels are not currently allowed"));
 }
 
+TEST_P(ServerCoreTest, AppendConfigAndUnload) {
+  ServerCore::Options server_core_options = GetDefaultOptions();
+  ModelServerConfig config = GetTestModelServerConfigForFakePlatform();
+  std::unique_ptr<ServerCore> server_core;
+  TF_ASSERT_OK(
+      CreateServerCore(config, std::move(server_core_options), &server_core));
+  string new_model = "second_model";
+  RenameModelServerConfig(&config, new_model);
+  server_core->AppendConfig(config);
+  std::vector<ServableId> available_servables =
+      server_core->ListAvailableServableIds();
+  ASSERT_EQ(2, available_servables.size());
+
+  server_core->UnloadModel(new_model);
+  // Wait for model to unload as this doesn't block.
+  for (int i = 0; i < 1000; i++) {
+    Env::Default()->SleepForMicroseconds(10 * 1000);
+    available_servables = server_core->ListAvailableServableIds();
+    if (available_servables.size() < 2) break;
+  }
+  ASSERT_EQ(1, available_servables.size());
+}
+
 INSTANTIATE_TEST_CASE_P(
     TestType, ServerCoreTest,
     ::testing::Combine(

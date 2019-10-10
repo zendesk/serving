@@ -124,6 +124,12 @@ void ServerCoreTest::SwitchToHalfPlusTwoWith2Versions(
   }
 }
 
+void ServerCoreTest::RenameModelServerConfig(ModelServerConfig* config, string new_name) {
+  CHECK_EQ(1, config->model_config_list().config().size());
+  auto model = config->mutable_model_config_list()->mutable_config(0);
+  model->set_name(new_name);
+}
+
 ServerCore::Options ServerCoreTest::GetDefaultOptions() {
   // Model platforms.
   const TestType test_type = GetTestType();
