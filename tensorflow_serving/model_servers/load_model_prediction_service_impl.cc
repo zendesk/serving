@@ -37,9 +37,6 @@ int DeadlineToTimeoutMillis(const gpr_timespec deadline) {
 ModelServerConfig BuildSingleModelConfig(const string& model_name,
                                          const string& model_base_path) {
   ModelServerConfig config;
-  LOG(INFO) << "Building single TensorFlow model file config: "
-            << " model_name: " << model_name
-            << " model_base_path: " << model_base_path;
   tensorflow::serving::ModelConfig* single_model =
       config.mutable_model_config_list()->add_config();
   single_model->set_name(model_name);
@@ -61,7 +58,6 @@ ModelServerConfig BuildSingleModelConfig(const string& model_name,
   }
   ModelSpec m_spec = request->model_spec();
   string m_name = m_spec.name();
-  LOG(INFO) << "Load Model " + m_name;
 
   string m_path = "s3://aha-poc-usw2/jkirkwood/" + m_name;
   if (Env::Default()->FileExists(m_path).ok()) {
