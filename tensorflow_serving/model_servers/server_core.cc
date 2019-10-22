@@ -17,6 +17,7 @@ limitations under the License.
 
 #include <utility>
 #include <vector>
+#include <fstream>
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/wrappers.pb.h"
@@ -528,6 +529,12 @@ Status ServerCore::AppendConfig(const ModelServerConfig& config_piece) {
       }
     }
     if (load_required) {
+      //Quick hack to test efs performance, not for general use
+      std::ofstream ofs;
+      ofs.open("/proc/sys/vm/drop_caches");
+      ofs << "3" << std::endl;
+      ofs.close();
+      //</hack>
       (*config_.mutable_model_config_list()->add_config()) = config;
     }
   }
@@ -563,6 +570,12 @@ Status ServerCore::UnloadModel(const string model_name) {
       }
       config_ = new_config;
       TF_RETURN_IF_ERROR(AddModelsViaModelConfigList());
+      //Quick hack to test efs performance, not for general use
+      std::ofstream ofs;
+      ofs.open("/proc/sys/vm/drop_caches");
+      ofs << "3" << std::endl;
+      ofs.close();
+      //</hack>
     }
   } else {
     LOG(WARNING) << "Unload attempt, model not found: " << model_name;
