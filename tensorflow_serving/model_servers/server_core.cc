@@ -508,11 +508,6 @@ Status ServerCore::AppendConfig(const ModelServerConfig& config_piece) {
       }
     }
     if (load_required) {
-      LOG(INFO) << "\nAppending config entry"
-                << "\n\tindex : " << index
-                << "\n\tpath : " << config.base_path()
-                << "\n\tname : " << config.name()
-                << "\n\tplatform : " << config.model_platform();
       (*config_.mutable_model_config_list()->add_config()) = config;
     }
   }
@@ -543,17 +538,14 @@ Status ServerCore::UnloadModel(const string model_name) {
       for (int index = 0; index < list.config_size(); index++) {
         const ModelConfig config = list.config(index);
         if (config.name() != model_name){
-          LOG(INFO) << "Copy model " + config.name() + " to new config";
           (*new_config.mutable_model_config_list()->add_config()) = config;
         }
       }
       config_ = new_config;
-      LOG(INFO) << "Recreated config. Reloading..";
       TF_RETURN_IF_ERROR(AddModelsViaModelConfigList());
-      LOG(INFO) << "Reloading Done.";
     }
   } else {
-    LOG(INFO) << "Unload attempt, model not found: " << model_name;
+    LOG(WARNING) << "Unload attempt, model not found: " << model_name;
   }
   return Status::OK();
 }
