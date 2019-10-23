@@ -171,9 +171,11 @@ cc_library(
         ":bundle_factory_util",
         ":curried_session",
         ":session_bundle_config_proto",
+        ":tflite_session_lib",
         "//tensorflow_serving/batching:batching_session",
         "//tensorflow_serving/core:loader",
         "//tensorflow_serving/resources:resources_proto",
+        "@com_google_absl//absl/strings",
         "@org_tensorflow//tensorflow/cc/saved_model:loader",
         "@org_tensorflow//tensorflow/cc/saved_model:tag_constants",
         "@org_tensorflow//tensorflow/contrib/session_bundle:bundle_shim",
@@ -189,6 +191,7 @@ cc_test(
     size = "medium",
     srcs = ["saved_model_bundle_factory_test.cc"],
     data = [
+        "//tensorflow_serving/servables/tensorflow/testdata:saved_model_half_plus_two_tflite",
         "@org_tensorflow//tensorflow/cc/saved_model:saved_model_half_plus_two",
         "@org_tensorflow//tensorflow/contrib/session_bundle:session_bundle_half_plus_two",
     ],
@@ -416,6 +419,53 @@ cc_test(
         "@org_tensorflow//tensorflow/core:lib",
         "@org_tensorflow//tensorflow/core:protos_all_cc",
         "@org_tensorflow//tensorflow/core:test",
+    ],
+)
+
+cc_library(
+    name = "tflite_session_lib",
+    srcs = ["tflite_session.cc"],
+    hdrs = ["tflite_session.h"],
+    deps = [
+        ":serving_session",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_protobuf//:protobuf",
+        "@org_tensorflow//tensorflow/cc/saved_model:signature_constants",
+        "@org_tensorflow//tensorflow/core:lib",
+        "@org_tensorflow//tensorflow/core:protos_all_cc",
+        "@org_tensorflow//tensorflow/lite:framework",
+        "@org_tensorflow//tensorflow/lite:string_util",
+        "@org_tensorflow//tensorflow/lite/core/api",
+        "@org_tensorflow//tensorflow/lite/delegates/flex:delegate",
+        "@org_tensorflow//tensorflow/lite/kernels:builtin_ops",
+    ],
+)
+
+cc_test(
+    name = "tflite_session_test",
+    size = "small",
+    srcs = ["tflite_session_test.cc"],
+    data = [
+        "//tensorflow_serving/servables/tensorflow/testdata:saved_model_half_plus_two_tflite",
+    ],
+    deps = [
+        ":tflite_session_lib",
+        "//tensorflow_serving/core/test_util:test_main",
+        "//tensorflow_serving/test_util",
+        "@org_tensorflow//tensorflow/core:lib",
+        "@org_tensorflow//tensorflow/core:protos_all_cc",
+        "@org_tensorflow//tensorflow/core:test",
+        "@org_tensorflow//tensorflow/core:testlib",
+    ],
+)
+
+cc_binary(
+    name = "tflite_session",
+    srcs = ["tflite_session_main.cc"],
+    deps = [
+        ":tflite_session_lib",
+        "@org_tensorflow//tensorflow/core:framework",
     ],
 )
 

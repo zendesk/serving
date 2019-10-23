@@ -124,6 +124,18 @@ def CallREST(url, req, max_attempts=60):
       time.sleep(1)
 
 
+def SortedObject(obj):
+  """Returns sorted object (with nested list/dictionaries)."""
+  if isinstance(obj, dict):
+    return sorted((k, SortedObject(v)) for k, v in obj.items())
+  if isinstance(obj, list):
+    return sorted(SortedObject(x) for x in obj)
+  if isinstance(obj, tuple):
+    return list(sorted(SortedObject(x) for x in obj))
+  else:
+    return obj
+
+
 class TensorflowModelServerTest(tf.test.TestCase):
   """This class defines integration test cases for tensorflow_model_server."""
 
@@ -142,6 +154,7 @@ class TensorflowModelServerTest(tf.test.TestCase):
   @staticmethod
   def RunServer(model_name,
                 model_path,
+                model_type='tf',
                 model_config_file=None,
                 monitoring_config_file=None,
                 batching_parameters_file=None,
@@ -158,6 +171,7 @@ class TensorflowModelServerTest(tf.test.TestCase):
     Args:
       model_name: Name of model.
       model_path: Path to model.
+      model_type: Type of model TensorFlow ('tf') or TF Lite ('tflite').
       model_config_file: Path to model config file.
       monitoring_config_file: Path to the monitoring config file.
       batching_parameters_file: Path to batching parameters.
@@ -196,6 +210,9 @@ class TensorflowModelServerTest(tf.test.TestCase):
       command += ' --model_base_path=' + model_path
     else:
       raise ValueError('Both model_config_file and model_path cannot be empty!')
+
+    if model_type == 'tflite':
+      command += ' --use_tflite_model=true'
 
     if monitoring_config_file:
       command += ' --monitoring_config_file=' + monitoring_config_file
@@ -288,8 +305,7 @@ class TensorflowModelServerTest(tf.test.TestCase):
 
   def _GetSavedModelBundlePath(self):
     """Returns a path to a model in SavedModel format."""
-    return os.path.join(os.environ['TEST_SRCDIR'], 'tf_serving/external/org_tensorflow/tensorflow/',
-                        'cc/saved_model/testdata/half_plus_two')
+    return os.path.join(self.testdata_dir, 'saved_model_half_plus_two_cpu')
 
   def _GetModelVersion(self, model_path):
     """Returns version of SavedModel/SessionBundle in given path.
@@ -308,6 +324,10 @@ class TensorflowModelServerTest(tf.test.TestCase):
   def _GetSavedModelHalfPlusThreePath(self):
     """Returns a path to a half_plus_three model in SavedModel format."""
     return os.path.join(self.testdata_dir, 'saved_model_half_plus_three')
+
+  def _GetTfLiteModelPath(self):
+    """Returns a path to a model in TF Lite format."""
+    return os.path.join(self.testdata_dir, 'saved_model_half_plus_two_tflite')
 
   def _GetSessionBundlePath(self):
     """Returns a path to a model in SessionBundle format."""
@@ -824,7 +844,13 @@ class TensorflowModelServerTest(tf.test.TestCase):
       with open(model_metadata_file) as f:
         expected_metadata = json.load(f)
         # Verify response
-        self.assertEqual(json.loads(resp_data), expected_metadata)
+        # Note, we sort the JSON object before comparing. Formally JSON lists
+        # (aka arrays) are considered ordered and general comparison should NOT
+        # sort. In this case, the "metadata" does not have any ordering making
+        # the sort OK (and the test robust).
+        self.assertEqual(
+            SortedObject(json.loads(resp_data)),
+            SortedObject(expected_metadata))
     except Exception as e:  # pylint: disable=broad-except
       self.fail('Request failed with error: {}'.format(e))
 
@@ -861,6 +887,16 @@ class TensorflowModelServerTest(tf.test.TestCase):
         specify_output=False,
         expected_version=self._GetModelVersion(
             self._GetSavedModelHalfPlusThreePath()))
+
+  def testPredictOnTfLite(self):
+    """Test saved model prediction on a TF Lite mode."""
+    model_server_address = TensorflowModelServerTest.RunServer(
+        'default', self._GetTfLiteModelPath(), model_type='tflite')[1]
+    self.VerifyPredictRequest(
+        model_server_address,
+        expected_output=3.0,
+        specify_output=False,
+        expected_version=self._GetModelVersion(self._GetTfLiteModelPath()))
 
   def test_tf_saved_model_save(self):
     base_path = os.path.join(self.get_temp_dir(), 'tf_saved_model_save')

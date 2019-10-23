@@ -310,9 +310,17 @@ cc_library(
     ],
 )
 
-SUPPORTED_TENSORFLOW_OPS = [
+load("//tensorflow_serving:tensorflow_version.bzl", "if_v2", "if_not_v2")
+
+SUPPORTED_TENSORFLOW_OPS = if_v2([]) + if_not_v2([
     "@org_tensorflow//tensorflow/contrib:contrib_kernels",
     "@org_tensorflow//tensorflow/contrib:contrib_ops_op_lib",
+]) + [
+    "@org_tensorflow_text//tensorflow_text:constrained_sequence_op_cc",
+    "@org_tensorflow_text//tensorflow_text:sentence_breaking_ops_cc",
+    "@org_tensorflow_text//tensorflow_text:unicode_script_tokenizer_cc",
+    "@org_tensorflow_text//tensorflow_text:whitespace_tokenizer_cc",
+    "@org_tensorflow_text//tensorflow_text:wordpiece_tokenizer_cc",
 ]
 
 TENSORFLOW_DEPS = [
@@ -413,7 +421,8 @@ py_test(
         "//tensorflow_serving/servables/tensorflow/testdata:saved_model_half_plus_three/00000123/saved_model.pb",
         "//tensorflow_serving/servables/tensorflow/testdata:saved_model_half_plus_three/00000123/variables/variables.data-00000-of-00001",
         "//tensorflow_serving/servables/tensorflow/testdata:saved_model_half_plus_three/00000123/variables/variables.index",
-        "@org_tensorflow//tensorflow/cc/saved_model:saved_model_half_plus_two",
+        "//tensorflow_serving/servables/tensorflow/testdata:saved_model_half_plus_two_cpu",
+        "//tensorflow_serving/servables/tensorflow/testdata:saved_model_half_plus_two_tflite",
     ],
     python_version = "PY2",
     srcs_version = "PY2AND3",
