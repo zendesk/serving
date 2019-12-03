@@ -47,12 +47,14 @@ int DeadlineToTimeoutMillis(const gpr_timespec deadline) {
   ModelSpec model_spec = request->model_spec();
   string model_name = model_spec.name();
 
+  LOG(INFO) << "Call to lazy load model: " << model_name;
   const ::grpc::Status load_status =
       ToGRPCStatus(core_->LazyLoad(model_spec));
   if (!load_status.ok()) {
     VLOG(1) << "Lazy load failed: " << load_status.error_message();
     return load_status;
   }
+  LOG(INFO) << "Finished call to lazy load model: " << model_name;
 
   const ::grpc::Status status =
       ToGRPCStatus(predictor_->Predict(run_options, core_, *request, response));
